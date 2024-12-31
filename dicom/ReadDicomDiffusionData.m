@@ -101,7 +101,7 @@ nc = info.Columns;
 ns = info.Private_0021_104f;
 
 if length(ns) > 1
-    fprintf('Warning: Expecting single integer value for private tag 0021_104\n');
+    fprintf('Warning: Expecting single integer value for private tag 0021_104f\n');
     fprintf('Warning: Using first index for number of slices = %d\n',ns(1));
     ns = double(ns(1));
 end

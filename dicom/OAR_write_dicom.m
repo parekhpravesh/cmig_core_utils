@@ -41,6 +41,7 @@ else
   end
 end
 
+ivec = ivec(~isnan(ivec));
 [ivec, sortinds] = sort(ivec);
 dcminfo = dcminfo(sortinds);
 
