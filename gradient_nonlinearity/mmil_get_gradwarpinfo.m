@@ -169,11 +169,11 @@ elseif ~isempty(regexpi(Manufacturer,'ge medical'))
     end
   end
   % Should check images using version of ctx_get_gwtype, if gradwarpinfo.unwarpflag == 1, to handle case of CV nograd=1
-  if ismember(deblank(lower(ManufacturersModelName)),{'discovery mr450','discovery mr750' })
+  if ismember(deblank(lower(ManufacturersModelName)),{'discovery mr450', 'discovery mr750'})
       gradwarpinfo.gwtype = 9;
       return;
   end
-  if ismember(deblank(lower(ManufacturersModelName)),{'discovery mr750w'})
+  if ismember(deblank(lower(ManufacturersModelName)),{'discovery mr750w', 'signa pet/mr'})
       gradwarpinfo.gwtype = 10;
       return;
   end

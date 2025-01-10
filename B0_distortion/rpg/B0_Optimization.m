@@ -1,10 +1,11 @@
-function corr_final = B0_Optimization(fname_f, fname_r, B0optFlag, corrmin)
+function corr_final = B0_Optimization(fname_f, fname_r, params)
 
-if ~exist('B0optFlag','var')
-    B0optFlag = 1;
-end
-if ~exist('corrmin','var')
-    corrmin=.95;
+if exist('params','var')
+  B0optFlag = params.B0optFlag;
+  corrmin = params.B0corrmin;
+else
+  B0optFlag = 1;
+  corrmin = 0.95;
 end
 
 [fpath fname ext] = fileparts(fname_f);
@@ -36,7 +37,7 @@ if B0optFlag == 2 % full opt
         kernelWidthMax = kvec(i);
         for j = 1:length(lvec)
             lambda2 = lvec(j);
-            QD_Estimate_B0(fname_f, fname_r, kernelWidthMax, lambda2);
+            QD_Estimate_B0(fname_f, fname_r, kernelWidthMax, lambda2, params);
             vol_f_B0uw = QD_load_mgh(fname_f_B0uw);
             vol_r_B0uw = QD_load_mgh(fname_r_B0uw);
             cormat(i,j) = corr(vol_f_B0uw(inds),vol_r_B0uw(inds));
@@ -57,7 +58,7 @@ if B0optFlag == 2 % full opt
     fname_out = sprintf('%s/%s_B0opt_kernelWidthMax_%g_lamda2_%g_cost_%g',fpath,fname,kernelWidthMax,lambda2,cormat(i,j));
     unix(sprintf('touch %s',fname_out));
     fprintf('%s -- %s.m:    Final Distortion correlation - %g.\n',datestr(now),mfilename,cormat(i,j));
-    QD_Estimate_B0(fname_f, fname_r, kernelWidthMax, lambda2);
+    QD_Estimate_B0(fname_f, fname_r, kernelWidthMax, lambda2, params);
     corr_final = cormat(i,j);
     
 elseif B0optFlag == 1 % partial opt
@@ -70,7 +71,7 @@ elseif B0optFlag == 1 % partial opt
         kernelWidthMax = kvec(i);
         for j = 1:length(lvec)
             lambda2 = lvec(j);
-            QD_Estimate_B0(fname_f, fname_r, kernelWidthMax, lambda2);
+            QD_Estimate_B0(fname_f, fname_r, kernelWidthMax, lambda2, params);
             vol_f_B0uw = QD_load_mgh(fname_f_B0uw);
             vol_r_B0uw = QD_load_mgh(fname_r_B0uw);
             cormat(i,j) = corr(vol_f_B0uw(inds),vol_r_B0uw(inds));
@@ -91,7 +92,7 @@ elseif B0optFlag == 1 % partial opt
     fname_out = sprintf('%s/%s_B0opt_kernelWidthMax_%g_lamda2_%g_cost_%g',fpath,fname,kernelWidthMax,lambda2,cormat(i,j));
     unix(sprintf('touch %s',fname_out));
     fprintf('%s -- %s.m:    Final Distortion correlation - %g.\n',datestr(now),mfilename,cormat(i,j));
-    QD_Estimate_B0(fname_f, fname_r, kernelWidthMax, lambda2);
+    QD_Estimate_B0(fname_f, fname_r, kernelWidthMax, lambda2, params);
     corr_final = cormat(i,j);
     
 else

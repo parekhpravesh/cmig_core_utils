@@ -1,4 +1,4 @@
-function vox_shift_map = RPG_estimate_displacements(fname_fwd, fname_rev, B0optFlag, corrmin)
+function vox_shift_map = RPG_estimate_displacements(fname_fwd, fname_rev, params)
 
 vol_fwd_orig = QD_ctx_load_mgh(fname_fwd);
 vol_rev_orig = QD_ctx_load_mgh(fname_rev);
@@ -16,7 +16,7 @@ QD_ctx_save_mgh(vol_rev_cropped, fname_rev);
 % Run RPG
 fprintf('%s -- %s.m:    Estimating B0 Distortions...\n', datestr(now), mfilename);
 try
-  B0_Optimization(fname_fwd, fname_rev, B0optFlag, corrmin);
+  B0_Optimization(fname_fwd, fname_rev, params);
   fprintf('%s -- %s.m:    Finished estimating B0 Distortions...\n', datestr(now), mfilename);
 catch
   fprintf('%s -- %s.m:    ERROR: RPG B0 estimation failed...\n', datestr(now), mfilename);

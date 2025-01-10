@@ -1,7 +1,6 @@
 function [vol, Mvxl2ras, qmat, bvals, gwinfo, info] = ReadDicomDiffusionData(indir,ignoreGradInfo,varargin)
 % ReadDicomDiffusionData  Read DICOM diffusion data
 
-
 if ~exist('ignoreGradInfo','var')
     ignoreGradInfo = false;
 end
@@ -12,11 +11,13 @@ else
     file_list = recursive_dir(indir);
 end
 
-product_acquisition = 1; % vs tensor acquisition - defaults to product
+epi2 = 1; % vs some research (or product) acquisition with a different pulse sequence
+          % Defaults to epi2
 
 totfiles = length(file_list);
 fnames = {};
 instancenumber = [];
+slicelocation = [];
 qmat = [];
 bvals = [];
 iter = 1;
@@ -26,11 +27,15 @@ for i = 1:totfiles
     try
         info = dicominfo(fname);
 	info = fix_impax_dcm_tags(info);
-	if isfield(info, 'Private_0019_109c') && strcmp(info.Private_0019_109c, 'epi2') ~= 1
-	   product_acquisition = 0;
+	if ~isfield(info, 'Private_0019_109c')
+	  epi2 = 0;
+	elseif isfield(info, 'Private_0019_109c') && strcmp(info.Private_0019_109c, 'epi2') ~= 1
+	  epi2 = 0;
 	end
 
         instancenumber(iter) = info.InstanceNumber;
+	slicelocation(iter) = info.SliceLocation;
+	
         if ~ignoreGradInfo
 
 	  if isfield(info, 'Private_0019_10bb')
@@ -53,23 +58,22 @@ for i = 1:totfiles
 	     qvecs = [diff_dir_x diff_dir_y diff_dir_z];
 	     qmat = [qmat; qvecs];
 
-	  elseif product_acquisition == 1
-             bval_string = num2str(info.Private_0043_1039(1));
-	     bval_string = bval_string(2:end);
-	     indx = regexp(bval_string, '[1-9]0*');
-	     if ~isempty(indx)
-	       bval_string = bval_string(indx:end);
-	     else
-	       bval_string = '0';
-	     end
-	     bval = str2double(bval_string);
-	     bvals = [bvals; bval];
-	     qvecs = [diff_dir_x diff_dir_y diff_dir_z];
-	     qmat = [qmat; qvecs];
+	  elseif epi2 == 1
+            bval_string = num2str(info.Private_0043_1039(1));
+	    bval_string = bval_string(2:end);
+	    indx = regexp(bval_string, '[1-9]0*');
+	    if ~isempty(indx)
+	      bval_string = bval_string(indx:end);
+	    else
+	      bval_string = '0';
+	    end
+	    bval = str2double(bval_string);
+	    bvals = [bvals; bval];
+	    qvecs = [diff_dir_x diff_dir_y diff_dir_z];
+	    qmat = [qmat; qvecs];
 
 	  else
-	     bval = info.Private_0043_1039;
-	     bval = bval(1);
+	     bval = info.Private_0043_1039(1);
 	     if bval >= 1000
 		bval = round(bval, -2);
 	     end
@@ -96,9 +100,16 @@ if ~ignoreGradInfo
     qmat_sort = qmat(sortindx,:);
     bvals_sort = bvals(sortindx);
 end
+
 nr = info.Rows;
 nc = info.Columns;
-ns = info.Private_0021_104f;
+
+if isfield(info, 'Private_0021_104f')
+  ns = info.Private_0021_104f;
+else
+  slicelocation = unique(slicelocation);
+  ns = length(slicelocation);
+end
 
 if length(ns) > 1
     fprintf('Warning: Expecting single integer value for private tag 0021_104f\n');
