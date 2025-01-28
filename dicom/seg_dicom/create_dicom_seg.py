@@ -15,7 +15,10 @@ mat_contents = sio.loadmat(path_mat)
 # Mask volume
 mask = mat_contents['seg_fields'][0,0]['data']['imgs'][0,0]
 mask = mask.astype('bool')
-mask = mask.transpose(2, 1, 0)
+if len(mask.shape) == 3:
+    mask = mask.transpose(2, 1, 0)
+else:
+    mask = mask.transpose(2, 1, 0, 3)
 
 
 # Reference DICOMs
@@ -45,27 +48,30 @@ algorithm_identification = hd.AlgorithmIdentificationSequence(
     family=algo_family_code
 )
 
-# Description
-seg_label = mat_contents['seg_fields'][0,0]['description'][0,0]['label'][0]
-seg_id = mat_contents['seg_fields'][0,0]['description'][0,0]['tracking_id'][0]
-seg_type = mat_contents['seg_fields'][0,0]['description'][0,0]['type'][0]
-if seg_type == 'Organ':
-    seg_category = codes.cid7150.AnatomicalStructure
-    seg_type = codes.cid7166.Organ
-elif seg_type == 'Abnormal':
-    seg_category = codes.cid7150.MorphologicallyAbnormalStructure
-    seg_type = codes.cid242.Abnormal
-
-description_segment = hd.seg.SegmentDescription(
-    segment_number=1,
-    segment_label=seg_label,
-    segmented_property_category=seg_category,
-    segmented_property_type=seg_type,
-    algorithm_type=algo_type,
-    algorithm_identification=algorithm_identification,
-    tracking_uid=hd.UID(),
-    tracking_id=seg_id
-)
+# Descriptions
+descriptions = []
+fname = ''
+for i in range(mat_contents['seg_fields'][0,0]['description'].size):
+    seg_label = mat_contents['seg_fields'][0,0]['description'][0,i]['label'][0]
+    seg_id = mat_contents['seg_fields'][0,0]['description'][0,i]['tracking_id'][0]
+    seg_type = mat_contents['seg_fields'][0,0]['description'][0,i]['type'][0]
+    if seg_type == 'Organ':
+        seg_category = codes.cid7150.AnatomicalStructure
+        seg_type = codes.cid7166.Organ
+    elif seg_type == 'Abnormal':
+        seg_category = codes.cid7150.MorphologicallyAbnormalStructure
+        seg_type = codes.cid242.Abnormal
+    tmp = hd.seg.SegmentDescription(
+        segment_number=i+1,
+        segment_label=seg_label,
+        segmented_property_category=seg_category,
+        segmented_property_type=seg_type,
+        algorithm_type=algo_type,
+        algorithm_identification=algorithm_identification,
+        tracking_uid=hd.UID(),
+        tracking_id=seg_id)
+    descriptions.append(tmp)
+    fname = fname + seg_label + '_'
 
 # Seg instance
 seg_series_num = mat_contents['seg_fields'][0,0]['metadata'][0,0]['series_number'][0][0]
@@ -79,7 +85,7 @@ seg_dataset = hd.seg.Segmentation(
     source_images=image_datasets,
     pixel_array=mask,
     segmentation_type=hd.seg.SegmentationTypeValues.BINARY,
-    segment_descriptions=[description_segment],
+    segment_descriptions=descriptions,
     series_instance_uid=hd.UID(),
     series_number=seg_series_num,
     sop_instance_uid=hd.UID(),
@@ -90,4 +96,4 @@ seg_dataset = hd.seg.Segmentation(
     device_serial_number=seg_device_serial
 )
 
-seg_dataset.save_as(path_output + '/' + seg_label + '_SEG.dcm')
+seg_dataset.save_as(path_output + '/' + fname + 'SEG.dcm')
