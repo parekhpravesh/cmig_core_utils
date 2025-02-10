@@ -1,4 +1,4 @@
-function [vol, M] = QD_read_dicomvol(fnames, rescale_flag,sortflag);
+function [vol, M] = QD_read_dicomvol(fnames, rescale_flag, sortflag);
 %
 warnstatussave = warning;
 warning('off');
@@ -11,9 +11,27 @@ if ~exist('sortflag','var') || isempty(sortflag)
   sortflag = true;
 end 
 
+% Remove CT scout images
+ct_flag = 0;
+modality = getfield(dicominfo(fnames{1}),'Modality');
+if ~isempty(regexpi(modality, 'CT'))
+  ct_flag = 1;
+end
+
+if ct_flag
+  counter = 1;
+  for i = 1:length(fnames)
+    imtype = getfield(dicominfo(fnames{i}),'ImageType');
+    if isempty(regexpi(imtype, 'LOCALIZER'))
+      fnames2{counter} = fnames{i};
+      counter = counter + 1;
+    end
+  end
+  fnames = fnames2;    
+end
+
 if sortflag
   for fi = 1:length(fnames)
-%    posvec(fi) = getfield(dicominfo(fnames{fi}),'SliceLocation');
     posvec(fi) = getfield(dicominfo(fnames{fi}),'InstanceNumber');
   end
   [sv si] = sort(posvec);
