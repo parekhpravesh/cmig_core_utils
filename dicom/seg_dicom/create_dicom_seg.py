@@ -74,6 +74,7 @@ for i in range(mat_contents['seg_fields'][0,0]['description'].size):
     fname = fname + seg_label + '_'
 
 # Seg instance
+seg_series_desc = mat_contents['seg_fields'][0,0]['metadata'][0,0]['series_description'][0]
 seg_series_num = mat_contents['seg_fields'][0,0]['metadata'][0,0]['series_number'][0][0]
 seg_instance_num = mat_contents['seg_fields'][0,0]['metadata'][0,0]['instance_number'][0][0]
 seg_manufacturer = mat_contents['seg_fields'][0,0]['metadata'][0,0]['manufacturer'][0]
@@ -93,7 +94,8 @@ seg_dataset = hd.seg.Segmentation(
     manufacturer=seg_manufacturer,
     manufacturer_model_name=seg_model,
     software_versions=seg_software_version,
-    device_serial_number=seg_device_serial
+    device_serial_number=seg_device_serial,
+    series_description=seg_series_desc
 )
 
 seg_dataset.save_as(path_output + '/' + fname + 'SEG.dcm')
