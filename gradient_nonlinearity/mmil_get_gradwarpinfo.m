@@ -128,6 +128,8 @@ if ~isempty(regexpi(Manufacturer,'siemens'))
 
   % handle special case
   ManufacturersModelName = regexprep(ManufacturersModelName,'MAGNETOM Prisma','Prisma');
+  ManufacturersModelName = regexprep(ManufacturersModelName,'MAGNETOM Vida','Vida');
+  ManufacturersModelName = regexprep(ManufacturersModelName,'[_\s][Ff]it$','');
 
   switch lower(ManufacturersModelName)
     case {'sonata','trio','sonatavision'}
@@ -144,13 +146,14 @@ if ~isempty(regexpi(Manufacturer,'siemens'))
       gradwarpinfo.gwtype = 11;
     case {'connectome'} % HCP Connectome Skyra
       gradwarpinfo.gwtype = 12;
-      %gradwarpinfo.isoctrflag = 1;
     case {'prisma','prisma_fit','prisma fit'} % Prisma
       gradwarpinfo.gwtype = 13;
     case {'verio','biograph_mmr'} % Verio
       gradwarpinfo.gwtype = 16;
     case {'magnetom vida'}
       gradwarpinfo.gwtype = 17;
+    case {'cimax'}
+      gradwarpinfo.gwtype = 18;
     otherwise
       errmsg=sprintf('%s: Unknown gradient model %s %s\n',mfilename,Manufacturer,ManufacturersModelName);
       return;

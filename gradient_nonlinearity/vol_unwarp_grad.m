@@ -23,6 +23,7 @@ function voluw = vol_unwarp_grad(vol, gradient_type, jacobian, varargin)
 %                  15: GE Signa UHP
 %                  16: Siemens Verio/Biograph
 %                  17: Siemens Vida
+%                  18: Siemens Cima.X
 %
 %   jacobian:      0: don't use jacobian 
 %                  1: apply jacobian 

@@ -1,6 +1,6 @@
 %function create_gwc_file(type, numSamplePts, sampleRange, gwc_filename)
 %clear
-type=10;
+type=6;
 numSamplePts=[60 60 60]*2;
 sampleRange=[-200 -200 -200;200 200 200]*2;
 %gwc_filename='sonata.gwc';
@@ -52,12 +52,12 @@ elseif (type==5) % Skyra
     dpfn='siemens_skyra_dP.mgh';
     dhfn='siemens_skyra_dH.mgh';
 elseif (type==6) % ConnectomeSkyra
-    sp=gradParamsConnectome;
+    sp=gradParamsConnectomeSkyra;
     booldiff=true;
     dlfn='siemens_connectome_dL.mgh';
     dpfn='siemens_connectome_dP.mgh';
     dhfn='siemens_connectome_dH.mgh';             
-elseif (type==7) % ConnectomeSkyra
+elseif (type==7) % Prisma
     sp=gradParamsPrisma;
     booldiff=true;
     dlfn='siemens_prisma_dL.mgh';
@@ -218,10 +218,10 @@ voldH.maxI=max(voldH.imgs(:));
 % volJZ.minI=min(volJZ.imgs(:));
 % volJZ.maxI=max(volJZ.imgs(:));
 
+QD_ctx_save_mgh(voldL, dlfn);
+QD_ctx_save_mgh(voldP, dpfn);
+QD_ctx_save_mgh(voldH, dhfn);
 
-write_mgh(dlfn, voldL,3);
-write_mgh(dpfn, voldP,3);
-write_mgh(dhfn, voldH,3);
 % write_mgh(jxfn, volJX,3);
 % write_mgh(jyfn, volJY,3);
 % write_mgh(jzfn, volJZ,3);

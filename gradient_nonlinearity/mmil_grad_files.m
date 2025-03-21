@@ -23,6 +23,7 @@ function [fname_gradL,fname_gradP,fname_gradH,grad_unwarp] = mmil_grad_files(gra
 %                  15: GE Signa UHP
 %                  16: Siemens Verio/Biograph
 %                  17: Siemens Vida
+%                  18: Siemens Cima.X
 %
 % Output:
 %
@@ -127,6 +128,11 @@ case 17, % Siemens Vida
     fname_gradP = 'siemens_vida_dP.mgh';
     fname_gradH = 'siemens_vida_dH.mgh';
     grad_unwarp = 'Siemens_Vida';
+case 18, % Siemens Cima.X
+    fname_gradL = 'siemens_CimaX_dL.mgh';
+    fname_gradP = 'siemens_CimaX_dP.mgh';
+    fname_gradH = 'siemens_CimaX_dH.mgh';
+    grad_unwarp = 'Siemens_CimaX';
  otherwise,
     error('unsupported error type %d',gradient_type);
 end
