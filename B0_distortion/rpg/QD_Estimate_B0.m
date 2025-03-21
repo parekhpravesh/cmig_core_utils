@@ -7,6 +7,11 @@ if ~exist('lambda2','var')
     lambda2 = 1100;
 end
 
+sys_echo = 0;
+if isfield(params, 'PrintSysCalls')
+  sys_echo = params.PrintSysCalls;
+end
+
 [outdir name etc] = fileparts(fname_f);
 fname_f_B0uw = sprintf('%s_B0uw_exe.mgz',name);
 fname_dx = sprintf('%s_B0dx_exe.mgz',name);
@@ -31,18 +36,24 @@ end
 fprintf('%s\n', cmd);
 
 fprintf('%s -- %s.m:    Estimating distortions...\n',datestr(now),mfilename);
-status = system(cmd, '-echo');
+if sys_echo
+  status = system(cmd, '-echo');
+else
+  status = system(cmd);
+end
 
 if isdeployed || use_docker
-   cmd2 = sprintf('/bin/bash -c ''sudo chmod o=rw %s/*''', outdir);
-   system(cmd2, '-echo');
+  cmd2 = sprintf('/bin/bash -c ''sudo chmod o=rw %s/*''', outdir);
+  if sys_echo
+    status = system(cmd2, '-echo');
+  else
+    status = system(cmd2);
+  end
 end
 
 if status ~= 0 
-    fprintf('Error in %s -- %s',mfilename,result); 
-    return
+  fprintf('Error in %s -- %s',mfilename,result); 
+  return
 end
 
 end
-
-
