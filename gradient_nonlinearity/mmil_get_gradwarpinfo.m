@@ -176,7 +176,7 @@ elseif ~isempty(regexpi(Manufacturer,'ge medical'))
       gradwarpinfo.gwtype = 9;
       return;
   end
-  if ismember(deblank(lower(ManufacturersModelName)),{'discovery mr750w', 'signa pet/mr'})
+  if ismember(deblank(lower(ManufacturersModelName)),{'discovery mr750w', 'signa pet/mr', 'signa architect'})
       gradwarpinfo.gwtype = 10;
       return;
   end
