@@ -21,29 +21,49 @@ else
 end
 totfiles = length(file_list);
 
-ref_dcminfo = dicominfo(file_list{1});
-mosaic_flag = ~isempty(regexpi(ref_dcminfo.ImageType, 'MOSAIC'));
+for i = 1:totfiles
+  x = dicomread(file_list{i});
+  if ~isempty(x)
+    ref_dcminfo = dicominfo(file_list{i});
+  end
+end
+
+mosaic_flag = 0;
+if isfield(ref_dcminfo, 'ImageType')
+  mosaic_flag = ~isempty(regexpi(ref_dcminfo.ImageType, 'MOSAIC'));
+end
+
+rtdose_flag = 0;
+if isfield(ref_dcminfo, 'Modality')
+  rtdose_flag = ~isempty(regexpi(ref_dcminfo.Modality, 'RTDOSE'));
+end
+
+multiframe_flag = 0;
+if isfield(ref_dcminfo, 'NumberOfFrames')
+  multiframe_flag = 1;
+  [rows, cols, slices, frames] = size(vol.imgs);
+end
 
 fprintf('%s -- %s | Reading DICOM info...\n', datestr(now), mfilename);
-if mosaic_flag
+if mosaic_flag || rtdose_flag || multiframe_flag
   dcminfo = ref_dcminfo;
+
 else
   ivec = NaN(1,totfiles);
   for i = 1:totfiles;
     fnametmp = char(file_list(i));
     dcminfo{i} = dicominfo(fnametmp);
     ivec(i) = dcminfo{i}.InstanceNumber;
-
     if isequal( unique(ivec(~isnan(ivec))), 1:vol.dimd )
       break
     end
-
   end
-end
 
-ivec = ivec(~isnan(ivec));
-[ivec, sortinds] = sort(ivec);
-dcminfo = dcminfo(sortinds);
+  ivec = ivec(~isnan(ivec));
+  [ivec, sortinds] = sort(ivec);
+  dcminfo = dcminfo(sortinds);
+
+end
 
 maxvol = max(vol.imgs(:));
 dat = vol.imgs;
@@ -55,8 +75,12 @@ val3 = min(hv(find(cdf_hc>0.90)));
 
 fprintf('%s -- %s | Writing DICOM images...\n', datestr(now), mfilename);
 
-rgb_flag = 0;
 total_files = size(vol.imgs,3) * size(vol.imgs,4);
+if multiframe_flag
+   total_files = 1;
+end
+
+rgb_flag = 0;
 if exist('newmetadata', 'var')
   if isfield(newmetadata, 'PhotometricInterpretation')
     if strcmp(newmetadata.PhotometricInterpretation, 'RGB')
@@ -75,7 +99,7 @@ for i = 1:total_files
     vol_counter = vol_counter + 1;
   end
 
-  if mosaic_flag
+  if mosaic_flag || rtdose_flag || multiframe_flag
     metadata = dcminfo;
   else
     metadata = dcminfo{find(ivec == slice_counter)};
@@ -131,7 +155,10 @@ for i = 1:total_files
       metadata.BitsAllocated = 8;
       metadata.BitsStored = 8;
       metadata.HighBit = 7;
-      if ~rgb_flag
+      if multiframe_flag
+	dat = reshape(dat, [rows, cols, frames, slices]);
+	dicomwrite( uint8( permute(dat, [2 1 3 4]) ), fname_out, metadata, 'CreateMode', 'copy', 'MultiframeSingleFile', 'true' );
+      elseif ~rgb_flag
 	dicomwrite( uint8( squeeze(dat(:,:,slice_counter,vol_counter))' ), fname_out, metadata, 'CreateMode', 'copy' );
       else
 	dicomwrite( uint8( permute(squeeze(dat(:,:,slice_counter,:)), [2 1 3]) ), fname_out, metadata, 'CreateMode', 'copy' );
@@ -140,7 +167,10 @@ for i = 1:total_files
       metadata.BitsAllocated = 16;
       metadata.BitsStored = 16;
       metadata.HighBit = 15;
-      if ~rgb_flag
+      if multiframe_flag
+	dat = reshape(dat, [rows, cols, frames, slices]);
+	dicomwrite( uint16( permute(dat, [2 1 3 4]) ), fname_out, metadata, 'CreateMode', 'copy', 'MultiframeSingleFile', 'true' );
+      elseif ~rgb_flag
 	dicomwrite( uint16( squeeze(dat(:,:,slice_counter,vol_counter))' ), fname_out, metadata, 'CreateMode', 'copy' );
       else
 	dicomwrite( uint16( permute(squeeze(dat(:,:,slice_counter,:)), [2 1 3]) ), fname_out, metadata, 'CreateMode', 'copy' );
@@ -149,7 +179,10 @@ for i = 1:total_files
       metadata.BitsAllocated = 16;
       metadata.BitsStored = 16;
       metadata.HighBit = 15;
-      if ~rgb_flag
+      if multiframe_flag
+	dat = reshape(dat, [rows, cols, frames, slices]);
+	dicomwrite( uint16( permute(dat, [2 1 3 4]) ), fname_out, metadata, 'CreateMode', 'copy', 'MultiframeSingleFile', 'true' );
+      elseif ~rgb_flag
 	dicomwrite( uint16( squeeze(dat(:,:,slice_counter,vol_counter))' ), fname_out, metadata, 'CreateMode', 'copy' );
       else
 	dicomwrite( uint16( permute(squeeze(dat(:,:,slice_counter,:)), [2 1 3]) ), fname_out, metadata, 'CreateMode', 'copy' );
