@@ -59,6 +59,7 @@ for i = 1:total_files
   end
 
   metadata = dcm_hdr_struct;
+  metadata.SeriesInstanceUID = SeriesInstanceUID;
 
   %% Image geometry
   Mvxl2lph = ctx_struct.Mvxl2lph;
