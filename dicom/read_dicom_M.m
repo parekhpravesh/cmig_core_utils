@@ -1,4 +1,4 @@
-function M_LPH = read_dicom_M(fnames);
+function M_LPH = read_dicom_M(fnames)
 
 if ~iscell(fnames), fnames = {fnames}; end;
 nfiles = length(fnames);

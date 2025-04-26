@@ -25,6 +25,7 @@ for i = 1:totfiles
   x = dicomread(file_list{i});
   if ~isempty(x)
     ref_dcminfo = dicominfo(file_list{i});
+    break
   end
 end
 
