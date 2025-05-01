@@ -31,7 +31,7 @@ end
 if isdeployed || use_docker
   cmd = sprintf('/bin/bash -c ''sudo docker run -v %s:%s rpg -f %s -r %s -fo %s -ro %s -do %s -kernelWidthMax %d -lambda2 %d -od %s -xs %d -ys %d -zs %d -resample -nchunksZ %u''', outdir, outdir, fname_f,fname_r,fname_f_B0uw,fname_r_B0uw,fname_dx,kernelWidthMax,lambda2,outdir,voxel_resampling,voxel_resampling,voxel_resampling,nchunksZ); 
 else
-  cmd = sprintf('/bin/bash -c ''epic -f %s -r %s -fo %s -ro %s -do %s -kernelWidthMax %d -lambda2 %d -od %s -xs %d -ys %d -zs %d -resample -nchunksZ %u''',fname_f,fname_r,fname_f_B0uw,fname_r_B0uw,fname_dx,kernelWidthMax,lambda2,outdir,voxel_resampling,voxel_resampling,voxel_resampling,nchunksZ);
+  cmd = sprintf('/bin/bash -c ''singularity run -B %s:%s /space/bil-syn01/1/cmig_bil/containers/rpg/rpg.sif epic -f %s -r %s -fo %s -ro %s -do %s -kernelWidthMax %d -lambda2 %d -od %s -xs %d -ys %d -zs %d -resample -nchunksZ %u''', outdir, outdir, fname_f,fname_r,fname_f_B0uw,fname_r_B0uw,fname_dx,kernelWidthMax,lambda2,outdir,voxel_resampling,voxel_resampling,voxel_resampling,nchunksZ);
 end  
 fprintf('%s\n', cmd);
 
