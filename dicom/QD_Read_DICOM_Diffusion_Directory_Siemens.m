@@ -64,10 +64,14 @@ for i = 1:totfiles
       csa_hdr = csa_hdr{1}.CSAImageHeaderInfo;
       csa_fields = {csa_hdr.name};
       ind_q = find(~cellfun(@isempty,regexpi(csa_fields,'DiffusionGradientDirection')));
-      qvec = {csa_hdr(ind_q).item.val};
-      qmat(ii,1) = str2double(qvec{1});
-      qmat(ii,2) = str2double(qvec{2});
-      qmat(ii,3) = str2double(qvec{3});
+      if isempty(csa_hdr(ind_q).item)
+	qmat(ii,:) = NaN(1,3);
+      else
+	qvec = {csa_hdr(ind_q).item.val};
+	qmat(ii,1) = str2double(qvec{1});
+	qmat(ii,2) = str2double(qvec{2});
+	qmat(ii,3) = str2double(qvec{3});
+      end
     elseif encoding_problem
       qmat(ii,:) = NaN(1,3);
     end
@@ -128,7 +132,7 @@ end
 nrows_slice = nrows/nblocks;
 ncols_slice = ncols/nblocks;
 
-vol = zeros(nrows_slice, ncols_slice, nslices, nreps, 'single');
+vol = zeros(nrows_slice, ncols_slice, nslices, nreps);
 if mosaic_flag == true
    
   for ithrep = 1:nreps
@@ -162,7 +166,7 @@ else % Not mosaic mode
 	vol=[];
 	return
       end
-      vol(:,:,i,acq) = im;
+      vol(:,:,i,acq) = double(im);
     end
     indx_rep = indx_rep + nslices;
   end
