@@ -60,12 +60,14 @@ for i = 1:totfiles
 
 	  elseif epi2 == 1
             bval_string = num2str(info.Private_0043_1039(1));
-	    bval_string = bval_string(2:end);
-	    indx = regexp(bval_string, '[1-9]0*');
-	    if ~isempty(indx)
-	      bval_string = bval_string(indx:end);
-	    else
-	      bval_string = '0';
+	    if length(bval_string)>5
+	      bval_string = bval_string(2:end);
+	      indx = regexp(bval_string, '[1-9]0*');
+	      if ~isempty(indx)
+		bval_string = bval_string(indx:end);
+	      else
+		bval_string = '0';
+	      end
 	    end
 	    bval = str2double(bval_string);
 	    bvals = [bvals; bval];
