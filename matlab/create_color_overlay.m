@@ -1,4 +1,4 @@
-function vol_blend = create_color_overlay(vol_overlay, vol_underlay, varargin)
+function vol_blend = create_color_overlay(vol_overlay, vol_underlay, crange, cmap, volmask, sig, alpha)
 % 
 %   Create a colorized image overlay.
 %
@@ -14,23 +14,26 @@ function vol_blend = create_color_overlay(vol_overlay, vol_underlay, varargin)
 %       volmask: binary ctx volume. The overlay is multiplied by the mask,
 %           so areas where volmask.imgs == 0 will show background.
 %       sig: ???
-%       sf: smoothing factor for overlay
 %       alpha: transparency value, floating point number 0...1
 % 
 
-alpha = 1.0;
-
-if nargin == 3
-    crange = varargin{1};
-    cmap = 'hot';
-    volmask = [];
-    sig = [];
-else
-    crange = [min(vol_overlay.imgs(:)) max(vol_overlay.imgs(:))];
-    cmap = 'hot';
-    volmask = [];
-    sig = [];
+% Set defaults
+if ~exist('crange', 'var')
+  crange = [min(vol_overlay.imgs(:)) max(vol_overlay.imgs(:))];
 end
+if ~exist('cmap', 'var')
+  cmap = 'hot';
+end
+if ~exist('volmask', 'var')
+  volmask = [];
+end
+if ~exist('sig', 'var')
+  sig = [];
+end
+if ~exist('alpha', 'var')
+  alpha = 1.0;
+end
+
 
 fprintf('Fusing data...\n');
 vmin = crange(1);
@@ -50,11 +53,15 @@ vol_overlay_rgb = cat(4, min(1, max(0, vol_overlay_rgb(:,:,:,1))),...
 			 min(1, max(0, vol_overlay_rgb(:,:,:,2))),...
                          min(1, max(0, vol_overlay_rgb(:,:,:,3))));
 
-if isempty(sig)
+if size(vol_underlay.imgs, 4) == 3 % Already a color volume
+  vol_underlay_rgb = vol_underlay.imgs;
+else
+  if isempty(sig)
     sig = mean(vol_underlay.imgs(find(vol_underlay.imgs)));
     sig = mean(vol_underlay.imgs(find(vol_underlay.imgs>2*sig)));
+  end
+  vol_underlay_rgb = cat(4, max(0, min(1, vol_underlay.imgs/sig)), max(0, min(1, vol_underlay.imgs/sig)), max(0, min(1, vol_underlay.imgs/sig)));
 end
-vol_underlay_rgb = cat(4, max(0, min(1, vol_underlay.imgs/sig)), max(0, min(1, vol_underlay.imgs/sig)), max(0, min(1, vol_underlay.imgs/sig)));
 
 cell_overlay = zeros(size(vol_overlay_rgb));
 f = sqrt(sum(vol_overlay_rgb.^2,4));
