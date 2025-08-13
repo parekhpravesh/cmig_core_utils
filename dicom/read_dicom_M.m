@@ -23,9 +23,27 @@ if ~enhanced_flag
 
    PixelSpacing = dcminfo_1.PixelSpacing;
    ImageOrientationPatient = dcminfo_1.ImageOrientationPatient;
-   ImagePositionPatient = dcminfo_1.ImagePositionPatient;
+   ImagePositionPatient_1 = dcminfo_1.ImagePositionPatient;
    SpacingBetweenSlices = dcminfo_1.SpacingBetweenSlices;
+   
+   ImagePositionPatient = NaN(nfiles, 3);
+   ipp_diff = NaN(nfiles, 3);
+   ipp_diff_norm = NaN(nfiles, 1);
+   for i = 1:nfiles
+     dcminfo(i) = dicominfo(fnames{i});
+     ImagePositionPatient(i,:) = dcminfo(i).ImagePositionPatient';
+     ipp_diff(i,:) = (dcminfo(i).ImagePositionPatient - ImagePositionPatient_1)';
+     ipp_diff_norm(i) = norm(ipp_diff(i,:));
+   end
 
+   [unique_ipp, ia, ic] = unique(ImagePositionPatient, 'stable', 'rows');
+   unique_ipp_diff_norm = ipp_diff_norm(ia);
+   
+   indx_end = find(unique_ipp_diff_norm==max(unique_ipp_diff_norm));
+   ImagePositionPatient_end = unique_ipp(indx_end,:)';
+   steps_to_end = sum(unique_ipp_diff_norm > 0);
+   step_along_slice = (ImagePositionPatient_end - ImagePositionPatient_1) / steps_to_end;
+   
 else
 
   if isfield(dcminfo_1.PerFrameFunctionalGroupsSequence.Item_1,'PixelMeasuresSequence')
@@ -37,26 +55,46 @@ else
   end
 
   ImageOrientationPatient = dcminfo_1.PerFrameFunctionalGroupsSequence.Item_1.PlaneOrientationSequence.Item_1.ImageOrientationPatient;
-  ImagePositionPatient = dcminfo_1.PerFrameFunctionalGroupsSequence.Item_1.PlanePositionSequence.Item_1.ImagePositionPatient;
+  ImagePositionPatient_1 = dcminfo_1.PerFrameFunctionalGroupsSequence.Item_1.PlanePositionSequence.Item_1.ImagePositionPatient;
 
+  frames = dcminfo_1.NumberOfFrames;
+  if frames > 1
+    ImagePositionPatient = NaN(frames, 3);
+    ipp_diff = NaN(frames, 3);
+    ipp_diff_norm = NaN(frames, 1);
+    for i = 1:frames
+      frame_str = sprintf('Item_%d', i);
+      ImagePositionPatient(i,:) = dcminfo_1.PerFrameFunctionalGroupsSequence.(frame_str).PlanePositionSequence.Item_1.ImagePositionPatient';
+      ipp_diff(i,:) = ImagePositionPatient(i,:) - ImagePositionPatient_1';
+      ipp_diff_norm(i) = norm(ipp_diff(i,:));
+    end
+
+    [unique_ipp, ia, ic] = unique(ImagePositionPatient, 'stable', 'rows');
+    unique_ipp_diff_norm = ipp_diff_norm(ia);
+    
+    indx_end = find(unique_ipp_diff_norm==max(unique_ipp_diff_norm));
+    ImagePositionPatient_end = unique_ipp(indx_end,:)';
+    steps_to_end = sum(unique_ipp_diff_norm > 0);
+    step_along_slice = (ImagePositionPatient_end - ImagePositionPatient_1) / steps_to_end;
+  end
+  
 end
 
 row_orientation = ImageOrientationPatient(1:3);
 col_orientation = ImageOrientationPatient(4:6);
-slice_orientation = cross(col_orientation, row_orientation); % Because MGH convention is transposed
-
 step_along_row = PixelSpacing(2) * row_orientation;
 step_along_col = PixelSpacing(1) * col_orientation;
 
-if exist('gfov', 'var')
+if ~exist('step_along_slice', 'var') && exist('gfov', 'var')
   step_along_slice = (gfov(2)-gfov(1)) * slice_orientation;
-else
+elseif ~exist('step_along_slice', 'var')
+  slice_orientation = cross(row_orientation, col_orientation);
   step_along_slice = SpacingBetweenSlices * slice_orientation;
 end
 
 M = eye(4);
 M(1:3,1:3) = [step_along_row step_along_col step_along_slice];
-M(1:3,4) = ImagePositionPatient-M(1:3,:)*[1 1 1 1]'; % Adjust for Matlab 1-based indexing
+M(1:3,4) = ImagePositionPatient_1 - M(1:3,:)*[1 1 1 1]'; % Adjust for Matlab 1-based indexing
 
 M_LPH = M;
 

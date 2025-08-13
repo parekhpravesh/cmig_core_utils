@@ -63,12 +63,12 @@ for i = 1:total_files
 
   %% Image geometry
   Mvxl2lph = ctx_struct.Mvxl2lph;
-  dcr = Mvxl2lph(1:3,1)/norm(Mvxl2lph(:,1));  
-  dcc = Mvxl2lph(1:3,2)/norm(Mvxl2lph(:,2));  
-  dcs = Mvxl2lph(1:3,3)/norm(Mvxl2lph(:,3));  
-  slcthk = norm(Mvxl2lph(:,3));
+  dcr = Mvxl2lph(1:3,1)/norm(Mvxl2lph(1:3,1));  
+  dcc = Mvxl2lph(1:3,2)/norm(Mvxl2lph(1:3,2));  
+  dcs = Mvxl2lph(1:3,3)/norm(Mvxl2lph(1:3,3));  
+  slcthk = norm(Mvxl2lph(1:3,3));
   PixelSpacing = colvec(sqrt(sum(Mvxl2lph(:,[1 2]).^2)));
-  ImageOrientationPatient = [Mvxl2lph(1:3,1)/norm(Mvxl2lph(1:3,1)); Mvxl2lph(1:3,2)/norm(Mvxl2lph(1:3,2))]; 
+  ImageOrientationPatient = [dcr; dcc]; 
   ImagePositionPatient = Mvxl2lph(1:3,:)*[1 1 1 1]';
   metadata.SliceThickness = slcthk;
   metadata.SpacingBetweenSlices = slcthk;
