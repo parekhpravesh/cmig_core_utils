@@ -132,13 +132,17 @@ else % Classic DICOM -----------------------------------------------------------
 end
 
 
+% Set q vector for b=0 volumes to 0, rather than NaN
+inds_b0 = bvals == 0;
+qmat(inds_b0,:) = [0 0 0];
+
 % Check for synthesized volumes
-ind_b_nonzero = bvals > 0;
-ind_nan = isnan(qmat);
-ind_nan = sum(ind_nan, 2) == 3;
-ind_q0 = qmat == 0;
-ind_q0 = sum(ind_q0, 2) == 3;
-inds_synth = ind_b_nonzero & (ind_nan | ind_q0);
+inds_b_nonzero = bvals > 0;
+inds_nan = isnan(qmat);
+inds_nan = sum(inds_nan, 2) == 3;
+inds_q0 = qmat == 0;
+inds_q0 = sum(inds_q0, 2) == 3;
+inds_synth = inds_b_nonzero & (inds_nan | inds_q0);
 
 if any(inds_synth)
    fprintf('WARNING: DWI data contains synthesized volume(s)\n');
