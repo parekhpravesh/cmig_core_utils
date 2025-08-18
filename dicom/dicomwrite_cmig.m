@@ -18,12 +18,17 @@ if isfield(dcm_hdr_struct, 'Modality')
   rtdose_flag = ~isempty(regexpi(dcm_hdr_struct.Modality, 'RTDOSE'));
 end
 
-multiframe_flag = 0;
+multiframe_flag = 0; % Regular (not-enhanced) multiframe
 if isfield(dcm_hdr_struct, 'NumberOfFrames')
   multiframe_flag = 1;
-  [rows, cols, slices, frames] = size(ctx_struct.imgs);
 end
 
+enhanced_flag = 0; % Enhanced DICOM (also multiframe)
+if isfield(dcm_hdr_struct, 'PerFrameFunctionalGroupsSequence')
+  enhanced_flag = 1;
+end
+
+[rows, cols, slices, frames] = size(ctx_struct.imgs);
 maxvol = max(ctx_struct.imgs(:));
 dat = ctx_struct.imgs;
 [hc, hv] = hist(dat(find(dat>0)),1000);
@@ -35,7 +40,7 @@ val3 = min(hv(find(cdf_hc>0.90)));
 fprintf('%s -- %s | Writing DICOM images...\n', datestr(now), mfilename);
 
 total_files = size(ctx_struct.imgs,3) * size(ctx_struct.imgs,4);
-if multiframe_flag
+if multiframe_flag || enhanced_flag
    total_files = 1;
 end
 
@@ -106,7 +111,7 @@ for i = 1:total_files
       metadata.BitsAllocated = 8;
       metadata.BitsStored = 8;
       metadata.HighBit = 7;
-      if multiframe_flag
+      if multiframe_flag || enhanced_flag
 	dat = reshape(dat, [rows, cols, frames, slices]);
 	dicomwrite( uint8( permute(dat, [2 1 3 4]) ), fname_out, metadata, 'CreateMode', 'copy', 'MultiframeSingleFile', 'true' );
       elseif ~rgb_flag
@@ -118,7 +123,7 @@ for i = 1:total_files
       metadata.BitsAllocated = 16;
       metadata.BitsStored = 16;
       metadata.HighBit = 15;
-      if multiframe_flag
+      if multiframe_flag || enhanced_flag
 	dat = reshape(dat, [rows, cols, frames, slices]);
 	dicomwrite( uint16( permute(dat, [2 1 3 4]) ), fname_out, metadata, 'CreateMode', 'copy', 'MultiframeSingleFile', 'true' );
       elseif ~rgb_flag
@@ -130,7 +135,7 @@ for i = 1:total_files
       metadata.BitsAllocated = 16;
       metadata.BitsStored = 16;
       metadata.HighBit = 15;
-      if multiframe_flag
+      if multiframe_flag || enhanced_flag
 	dat = reshape(dat, [rows, cols, frames, slices]);
 	dicomwrite( uint16( permute(dat, [2 1 3 4]) ), fname_out, metadata, 'CreateMode', 'copy', 'MultiframeSingleFile', 'true' );
       elseif ~rgb_flag

@@ -45,12 +45,14 @@ if enhanced_flag % Enhanced DICOM ----------------------------------------------
   slices = length(C);
   frame_vols = frames / slices;
 
-  vol_unsorted = dicomread(ref_file);
+  vol_unsorted = double(dicomread(ref_file));
+  vol_unsorted = permute(vol_unsorted, [2 1 3 4]);
   [rows, cols, ~] = size(vol_unsorted);
   vol = zeros(rows, cols, slices, frame_vols);
   for i = 1:slices
+    vol_slice = vol_unsorted(:,:,:,IC==i);
     for j = 1:frame_vols
-      vol(:,:,i,:) = vol_unsorted(:,:,:,IC==j);
+      vol(:,:,i,j) = vol_slice(:,:,:,j);
     end
   end
 
