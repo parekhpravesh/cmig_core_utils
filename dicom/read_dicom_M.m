@@ -30,9 +30,9 @@ if ~enhanced_flag
    ipp_diff = NaN(nfiles, 3);
    ipp_diff_norm = NaN(nfiles, 1);
    for i = 1:nfiles
-     dcminfo(i) = dicominfo(fnames{i});
-     ImagePositionPatient(i,:) = dcminfo(i).ImagePositionPatient';
-     ipp_diff(i,:) = (dcminfo(i).ImagePositionPatient - ImagePositionPatient_1)';
+     dcminfo = dicominfo(fnames{i});
+     ImagePositionPatient(i,:) = dcminfo.ImagePositionPatient';
+     ipp_diff(i,:) = (dcminfo.ImagePositionPatient - ImagePositionPatient_1)';
      ipp_diff_norm(i) = norm(ipp_diff(i,:));
    end
 
