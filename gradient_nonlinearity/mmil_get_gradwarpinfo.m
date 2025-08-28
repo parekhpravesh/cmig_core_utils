@@ -3,16 +3,10 @@ function [gradwarpinfo,errmsg] = mmil_get_gradwarpinfo(dcminfo)
 %
 % Created:  03/19/19 by Feng Xue
 % Prev Mod: 10/31/22 by Don Hagler
-% Prev Mod: 11/03/22 by Don Hagler
-% Prev Mod: 11/22/22 by Don Hagler
-% Prev Mod: 11/29/22 by Don Hagler
-% Prev Mod: 02/02/23 by Don Hagler
-% Prev Mod: 06/12/23 by Don Hagler
-% Prev Mod: 06/13/23 by Don Hagler
-% Prev Mod: 09/26/24 by Don Hagler
-% Prev Mod: 10/01/24 by Don Hagler
-% Prev Mod: 10/11/24 by Don Hagler
-% Last Mod: 10/31/24 by Don Hagler
+% Prev Mod: 11/14/24 by Don Hagler
+% Prev Mod: 12/09/24 by Don Hagler
+% Prev Mod: 01/30/25 by Don Hagler
+% Last Mod: 08/27/25 by Don Hagler
 %
 
 % based on Josh Kuperman's QD_get_gradwarpinfo
@@ -126,7 +120,7 @@ if ~isempty(regexpi(Manufacturer,'siemens'))
     fprintf('%s: assuming isoctrflag = %d\n',mfilename,gradwarpinfo.isoctrflag);
   end
 
-  % handle special case
+  % handle special cases
   ManufacturersModelName = regexprep(ManufacturersModelName,'MAGNETOM Prisma','Prisma');
   ManufacturersModelName = regexprep(ManufacturersModelName,'MAGNETOM Vida','Vida');
   ManufacturersModelName = regexprep(ManufacturersModelName,'[_\s][Ff]it$','');
@@ -146,11 +140,11 @@ if ~isempty(regexpi(Manufacturer,'siemens'))
       gradwarpinfo.gwtype = 11;
     case {'connectome'} % HCP Connectome Skyra
       gradwarpinfo.gwtype = 12;
-    case {'prisma','prisma_fit','prisma fit'} % Prisma
+    case {'prisma'} % Prisma (and Prisma_fit)
       gradwarpinfo.gwtype = 13;
     case {'verio','biograph_mmr'} % Verio
       gradwarpinfo.gwtype = 16;
-    case {'magnetom vida'}
+    case {'vida'}
       gradwarpinfo.gwtype = 17;
     case {'cimax'}
       gradwarpinfo.gwtype = 18;
@@ -164,15 +158,22 @@ elseif ~isempty(regexpi(Manufacturer,'ge medical'))
   tmp = mmil_getfield(dcminfo,'Private_0043_102d',[]);
   if ~isempty(tmp)
     fprintf('%s: DICOM tag Private_0043_102d: ',mfilename);
-    try fprintf('%s',tmp); catch; end
+    try
+      fprintf('%s',tmp);
+    catch
+      disp(tmp);
+    end
     fprintf('\n');
+    if isnumeric(tmp)
+      tmp = char(mmil_rowvec(tmp));
+    end
     if ~isempty(regexp(tmp,'w'))
       fprintf('%s: 3D gradwarp applied on scanner\n',mfilename);
       gradwarpinfo.unwarpflag = 3;
     end
   end
   % Should check images using version of ctx_get_gwtype, if gradwarpinfo.unwarpflag == 1, to handle case of CV nograd=1
-  if ismember(deblank(lower(ManufacturersModelName)),{'discovery mr450', 'discovery mr750'})
+  if ismember(deblank(lower(ManufacturersModelName)),{'discovery mr450','discovery mr750' })
       gradwarpinfo.gwtype = 9;
       return;
   end
