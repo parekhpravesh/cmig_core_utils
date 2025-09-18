@@ -148,6 +148,10 @@ if ~isempty(regexpi(Manufacturer,'siemens'))
       gradwarpinfo.gwtype = 17;
     case {'cimax'}
       gradwarpinfo.gwtype = 18;
+    case {'aeraxj'}
+      gradwarpinfo.gwtype = 19;
+    case {'aeraxq'}
+      gradwarpinfo.gwtype = 20;
     otherwise
       errmsg=sprintf('%s: Unknown gradient model %s %s\n',mfilename,Manufacturer,ManufacturersModelName);
       return;
